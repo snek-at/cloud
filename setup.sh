@@ -33,7 +33,7 @@ readonly __ROOT="$(cd "$(dirname "${__DIR}")" && pwd)" # homedir
 
 # DEPENDENCY / LOGS VARIABLES
 # GINAvbs has currently one dependency that needs to be installed
-readonly __GINA_DEPS=(python3)
+readonly __GINA_DEPS=(python3 python3-pip)
 # Location of installation logs
 readonly __GINA_LOGS="${__DIR}/install.log"
 
@@ -150,12 +150,12 @@ install() {
                     # Cleaning cached files
                     pacman -Scc --noconfirm
                     
-                    # Installing if sudo is installed
-                    elif [[ $(sudo pacman -S --noconfirm ${_installArray[@]}) ]]; then
-                    # Cleaning cached files
-                    sudo pacman -Scc --noconfirm
-                    
-                    # Try again as root
+                # Installing if sudo is installed
+                elif [[ $(sudo pacman -S --noconfirm ${_installArray[@]}) ]]; then
+                # Cleaning cached files
+                sudo pacman -Scc --noconfirm
+                
+                # Try again as root
                 else
                     echo "+ ${INFO} retry as root again"
                     return 43
@@ -172,11 +172,32 @@ install() {
                     # Cleaning cached files
                     apt-get clean -y
                     
-                    # Installing if sudo is installed
-                    elif [[ $(sudo apt-get install ${_installArray[@]} -y) ]]; then
+                # Installing if sudo is installed
+                elif [[ $(sudo apt-get install ${_installArray[@]} -y) ]]; then
+                # Cleaning cached files
+                sudo apt-get clean -y
+                
+                # Try again as root
+                else
+                    echo "+ ${INFO} retry as root again"
+                    return 43
+                fi
+                
+                echo -e "+ [${TICK}] All dependencies are now installed"
+            fi
+        ;;
+        'fedora')
+            if [[ ${_installArray[@]} ]]; then
+                # Installing Packages if the script was started as root
+                if [[ $(dnf install ${_installArray[@]} -y) ]]; then
                     # Cleaning cached files
-                    sudo apt-get clean -y
+                    dnf clean all
                     
+                # Installing if sudo is installed
+                elif [[ $(sudo dnf install ${_installArray[@]} -y) ]]; then
+                # Cleaning cached files
+                dnf clean all
+                
                     # Try again as root
                 else
                     echo "+ ${INFO} retry as root again"
@@ -208,6 +229,7 @@ exit_handler(){
         echo "+ Thanks for using GINAvbs"
         echo -e "+"
         echo -e "${COOL_LINE}"
+        echo -e "${COL_NC}"
         
         return ${error_code};
     fi
@@ -218,7 +240,8 @@ exit_handler(){
     error_handler ${error_code}
     echo -e "+"
     echo -e "${COOL_LINE}"
-    
+    echo -e "${COL_NC}"
+
     exit ${error_code}
 } 2>/dev/null
 
@@ -250,12 +273,12 @@ main(){
     _hosts="${_hosts// /}"
     _hostsArray=(${_hosts//,/ })
     
-    python3 -m ansible playbook -i , -e "hosts=${_hosts}" playbooks/local_setup.yml
-    
+    python3 -m ansible playbook -i , -e "hosts=${_hosts}" playbooks/local_setup.yml --ask-vault-pass
+
     export ANSIBLE_HOST_KEY_CHECKING=False
     
     for i in "${_hostsArray[@]}"; do
-        python3 -m ansible playbook -i ${i}, -u root -k playbooks/remote_setup.yml --ask-vault-pass
+        python3 -m ansible playbook -i ${i}, -u pirate -k playbooks/remote_setup.yml --ask-vault-pass
     done
     
     return $?

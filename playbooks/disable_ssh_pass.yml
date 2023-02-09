@@ -5,11 +5,11 @@
     - ../vault.yml
 
   tasks:
-    - name: Enable ssh password login
+    - name: Disable ssh password login
       lineinfile:
         dest: /etc/ssh/sshd_config
         regexp: "^PasswordAuthentication"
-        line: "PasswordAuthentication yes"
+        line: "PasswordAuthentication no"
         state: present
 
   post_tasks:

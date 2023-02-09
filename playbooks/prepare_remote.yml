@@ -1,16 +1,25 @@
 ---
 - hosts: all
   vars_files:
-    - ~/vault.yml
+    - ../vault.yml
 
   pre_tasks:
+    - name: Add valid DNS server
+      become: true
+      lineinfile:
+        dest: /etc/resolv.conf
+        regexp: '^nameserver'
+        line: 'nameserver 1.1.1.1'
+        state: present
     - name: Add basic configuration
+      become: true
       shell: |
         set -ex
-        echo 'photonq' > /etc/hostname
+        echo 'snek' > /etc/hostname
         localectl set-locale LANG=en_US.UTF-8
         ln -sfn /usr/share/zoneinfo/UTC /etc/localtime
     - name: Install epel (Extra Packages for Enterprise Linux)
+      become: true
       shell: |
         set -ex
         dnf distro-sync -y
@@ -22,26 +31,17 @@
       package:
         name: "podman"
         state: present
-    - name: Install pip3
-      package:
-        name: "python3-pip"
-        state: present
-    - name: Upgrade pip
-      pip:
-        name: pip
-        extra_args: --upgrade
-    - name: Install cryptography python package
-      pip:
-        name: cryptography
     - name: Disable ssh password login
+      become: true
       lineinfile:
         dest: /etc/ssh/sshd_config
-        regexp: "^PasswordAuthentication"
-        line: "PasswordAuthentication no"
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
         state: present
 
   post_tasks:
     - name: Restart sshd
+      become: true
       systemd:
         name: sshd
         state: restarted
