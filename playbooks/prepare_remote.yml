@@ -25,6 +25,9 @@
         dnf distro-sync -y
         dnf install epel-release -y
         dnf install epel-release -y
+    - name: Install cryptography python package
+      pip:
+        name: cryptography
 
   tasks:
     - name: Install podman

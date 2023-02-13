@@ -13,7 +13,7 @@
         password: "{{ ansible_become_password | password_hash('sha512') }}"
         # generate_ssh_key: true
         # ssh_key_type: ssh-ed25519
-      with_items: '{{ user }}'
+      with_items: '{{ users }}'
       when:
         - item == "ansible"
     - name: Add user with a bash shell
@@ -25,7 +25,7 @@
         password: "{{ ansible_become_password | password_hash('sha512') }}"
         # generate_ssh_key: true
         # ssh_key_type: ssh-ed25519
-      with_items: '{{ user }}'
+      with_items: '{{ users }}'
       when:
         - item != "ansible"
     - name: Set authorized keys for ansible controller

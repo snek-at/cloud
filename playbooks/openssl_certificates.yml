@@ -11,6 +11,18 @@
         state: directory
 
   tasks:
+    - name: Install pip3
+      become: true
+      package:
+        name: "python3-pip"
+        state: present
+    - name: Upgrade pip
+      pip:
+        name: pip
+        extra_args: --upgrade
+    - name: Install cryptography python package
+      pip:
+        name: cryptography
     - name: Generate an OpenSSL private key
       openssl_privatekey:
         path: "/etc/ssl/nginx/{{ item | replace('.', '_') }}_privkey.pem"

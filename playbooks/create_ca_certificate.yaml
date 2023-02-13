@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   vars_files:
-    - ~/vault.yml
+    - ../vault.yml
   pre_tasks:
     - name: Create ssl directory
       file:
